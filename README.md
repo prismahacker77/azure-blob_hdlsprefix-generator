@@ -24,15 +24,30 @@ By prepending a hash-based prefix (e.g., `a3/f7/yourfile.parquet`), blobs are di
 
 - Python 3.8+
 - Azure CLI authenticated (`az login`) or other [DefaultAzureCredential](https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential) method
-- Required packages:
-  ```
-  azure-identity
-  azure-mgmt-resource
-  azure-mgmt-storage
-  azure-storage-blob
-  ```
 
 ## Installation
+
+### macOS / Linux
+
+```bash
+pip install -r requirements.txt
+```
+
+### Windows (PowerShell)
+
+```powershell
+pip install -r requirements.txt
+```
+
+Or if you have multiple Python versions:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### Manual Installation
+
+If you prefer to install packages individually:
 
 ```bash
 pip install azure-identity azure-mgmt-resource azure-mgmt-storage azure-storage-blob
