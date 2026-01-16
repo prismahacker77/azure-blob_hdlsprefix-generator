@@ -27,21 +27,13 @@ By prepending a hash-based prefix (e.g., `a3/f7/yourfile.parquet`), blobs are di
 
 ## Installation
 
-### macOS / Linux
-
 ```bash
 pip install -r requirements.txt
 ```
 
-### Windows (PowerShell)
+If you have multiple Python versions installed:
 
-```powershell
-pip install -r requirements.txt
-```
-
-Or if you have multiple Python versions:
-
-```powershell
+```bash
 python -m pip install -r requirements.txt
 ```
 

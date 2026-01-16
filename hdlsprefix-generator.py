@@ -619,27 +619,52 @@ def main():
         # List existing containers
         sp = Spinner("Fetching containers")
         sp.start()
-        container_list = list_containers(blob_service)
-        sp.stop(success=True, message=f"Found {len(container_list)} containers")
+        try:
+            container_list = list_containers(blob_service)
+            sp.stop(success=True, message=f"Found {len(container_list)} containers")
 
-        if container_list:
-            print(f"\n  {Colors.DIM}Available containers:{Colors.RESET}")
-            for c in container_list:
-                print(f"    {Colors.AZURE_ACCENT}-{Colors.RESET} {c}")
-            print()
+            if container_list:
+                print(f"\n  {Colors.DIM}Available containers:{Colors.RESET}")
+                for c in container_list:
+                    print(f"    {Colors.AZURE_ACCENT}-{Colors.RESET} {c}")
+                print()
+        except Exception as e:
+            sp.stop(success=False, message="Could not list containers")
+            container_list = []
+            error_msg = str(e)
+            if "AuthorizationFailure" in error_msg or "not authorized" in error_msg.lower():
+                print(f"\n  {Colors.WARN}! Authorization error listing containers.{Colors.RESET}")
+                print(f"  {Colors.DIM}This usually means your credential lacks data plane permissions.{Colors.RESET}")
+                print(f"  {Colors.DIM}Required role: 'Storage Blob Data Contributor' or 'Storage Blob Data Reader'{Colors.RESET}")
+                print(f"  {Colors.DIM}Assign via: az role assignment create --assignee <your-user-or-sp> \\{Colors.RESET}")
+                print(f"  {Colors.DIM}  --role \"Storage Blob Data Contributor\" --scope /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/{account_name}{Colors.RESET}")
+                print(f"\n  {Colors.INFO}You can still enter a container name manually.{Colors.RESET}\n")
+            else:
+                print(f"\n  {Colors.WARN}! Error: {e}{Colors.RESET}")
+                print(f"  {Colors.INFO}You can still enter a container name manually.{Colors.RESET}\n")
 
         container_name = prompt_container_name("Container Name")
 
         # Verify it exists
-        if not container_exists(blob_service, container_name):
-            print(f"  {Colors.WARN}! Container '{container_name}' not found{Colors.RESET}")
-            if prompt_yes_no("Create it?", True):
-                container_action = "create"
+        try:
+            if not container_exists(blob_service, container_name):
+                print(f"  {Colors.WARN}! Container '{container_name}' not found{Colors.RESET}")
+                if prompt_yes_no("Create it?", True):
+                    container_action = "create"
+                else:
+                    print(f"  {Colors.ERROR}! Cannot continue without a container{Colors.RESET}")
+                    sys.exit(1)
             else:
-                print(f"  {Colors.ERROR}! Cannot continue without a container{Colors.RESET}")
+                container_created = False
+        except Exception as e:
+            error_msg = str(e)
+            if "AuthorizationFailure" in error_msg or "not authorized" in error_msg.lower():
+                print(f"  {Colors.WARN}! Cannot verify container (authorization error){Colors.RESET}")
+                print(f"  {Colors.INFO}Proceeding with container '{container_name}' - upload may fail if it doesn't exist{Colors.RESET}")
+                container_created = False
+            else:
+                print(f"  {Colors.ERROR}! Error checking container: {e}{Colors.RESET}")
                 sys.exit(1)
-        else:
-            container_created = False
     else:
         container_name = prompt_container_name("Container Name", "data")
 
